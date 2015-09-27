@@ -78,11 +78,33 @@ class UnaryOpExpression(ParserBase):
 class BinaryOpExpression(ParserBase):
 
     _op_precedence = {
-
+        '+': 20,
+        '-': 20,
+        '*': 30,
+        '/': 30
     }
 
     def parse(self):
-        pass
+        primary = PrimaryExpression(self.token_stack)
+        return self.parse_expression_(primary, 0)
+
+    def parse_expression_(self, lhs, min_precedence):
+        while self.next_is_binary() and self.precedence_() >= min_precedence:
+            op_token = self.token_stack
+            rhs = PrimaryExpression(self.token_stack)
+            while self.next_is_binary() and self.precedence_() > self.precedence_(op_token):
+                rhs = self.parse_expression_(rhs, self.precedence_())
+            lhs = astnodes.BinaryOpExpression(lhs, op_token.value, rhs)
+
+        return lhs
+
+    def next_is_binary(self):
+        next_token = self.token_stack.peek()
+        return next_token.value in BinaryOpExpression._op_precedence
+
+    def precedence_(self, token = None):
+        token = token or self.token_stack.peek()
+        return BinaryOpExpression._op_precedence[token.value]
 
 
 class BracketedExpression(ParserBase):

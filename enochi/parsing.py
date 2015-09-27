@@ -75,6 +75,16 @@ class UnaryOpExpression(ParserBase):
         return astnodes.UnaryOpExpression(op_token.value, rhs_node)
 
 
+class BinaryOpExpression(ParserBase):
+
+    _op_precedence = {
+
+    }
+
+    def parse(self):
+        pass
+
+
 class BracketedExpression(ParserBase):
 
     def parse(self):

@@ -64,7 +64,6 @@ class IntegerLiteralExpression(ParserBase):
         int_token = self.pop_expecting(TokenType.integer)
         return astnodes.IntegerLiteral(int_token.value)
 
-
 class UnaryOpExpression(ParserBase):
 
     def parse(self):
@@ -90,8 +89,8 @@ class BinaryOpExpression(ParserBase):
 
     def parse_expression_(self, lhs, min_precedence):
         while self.next_is_binary() and self.precedence_() >= min_precedence:
-            op_token = self.token_stack
-            rhs = PrimaryExpression(self.token_stack)
+            op_token = self.token_stack.pop()
+            rhs = PrimaryExpression(self.token_stack).node
             while self.next_is_binary() and self.precedence_() > self.precedence_(op_token):
                 rhs = self.parse_expression_(rhs, self.precedence_())
             lhs = astnodes.BinaryOpExpression(lhs, op_token.value, rhs)

@@ -1,0 +1,74 @@
+from enochi.lexing import TokenType
+from enochi import astnodes
+
+__author__ = 'hwgehring'
+
+
+class ParseError(Exception):
+
+    def __init__(self, message, *tokens):
+        self.message = message
+        self.tokens = tokens
+
+    def __str__(self):
+        if len(self.tokens) == 0:
+            return self.message
+
+        return '{0}-{1}: {2}'.format(self.tokens[0].slice.start, self.tokens[-1].slice.stop-1, self.message)
+
+
+class TokenStack:
+
+    def __init__(self, tokens):
+        self._tokens = list(tokens)
+        self._cursor = 0
+        self._cursor_stack = []
+
+    def peek(self):
+        try:
+            return self._tokens[self._cursor]
+        except IndexError:
+            raise ParseError('Unexpected end of input')
+
+    def pop(self):
+        rv = self.peek()
+        self._cursor += 1
+        return rv
+
+    def push_cursor(self):
+        self._cursor = self._cursor_stack.pop()
+
+
+class ParserBase:
+
+    def __init__(self, token_stack):
+        self.token_stack = token_stack
+        self.node = self.parse()
+
+    def parse(self):
+        raise NotImplementedError()
+
+    def pop_expecting(self, type_):
+        next_token = self.token_stack.pop()
+        if next_token.type is not type_:
+            raise ParseError('Unexpected token: {0}, expected {1}'.format(next_token.type, type_), next_token)
+        return next_token
+
+
+class IntegerLiteralExpression(ParserBase):
+
+    def parse(self):
+        int_token = self.pop_expecting(TokenType.integer)
+        return astnodes.IntegerLiteral(int_token.value)
+
+
+class UnaryOpExpression(ParserBase):
+
+    def parse(self):
+        op_token = self.token_stack.pop()
+        if op_token.type not in [TokenType.plus, TokenType.minus]:
+            raise ParseError('Unexpected token: {0}, expected unary operator'.format(op_token.type), op_token)
+        rhs_node = Expression(self.token_stack).node
+        return astnodes.UnaryOpExpression(op_token.value, rhs_node)
+
+Expression = IntegerLiteralExpression

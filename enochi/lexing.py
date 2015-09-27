@@ -71,3 +71,5 @@ def lex_raw(text):
         token = first_token(text, start)
         yield token
         start = token.slice.stop
+
+lex = lex_raw

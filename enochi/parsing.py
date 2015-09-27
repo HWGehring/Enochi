@@ -1,8 +1,6 @@
 from enochi.lexing import TokenType
 from enochi import astnodes
 
-__author__ = 'hwgehring'
-
 
 class ParseError(Exception):
 
@@ -25,10 +23,7 @@ class TokenStack:
         self._cursor_stack = []
 
     def peek(self):
-        try:
-            return self._tokens[self._cursor]
-        except IndexError:
-            raise ParseError('Unexpected end of input')
+        return self._tokens[self._cursor]
 
     def pop(self):
         rv = self.peek()
@@ -63,6 +58,7 @@ class IntegerLiteralExpression(ParserBase):
     def parse(self):
         int_token = self.pop_expecting(TokenType.integer)
         return astnodes.IntegerLiteral(int_token.value)
+
 
 class UnaryOpExpression(ParserBase):
 

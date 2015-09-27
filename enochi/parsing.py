@@ -85,7 +85,7 @@ class BinaryOpExpression(ParserBase):
     }
 
     def parse(self):
-        primary = PrimaryExpression(self.token_stack)
+        primary = PrimaryExpression(self.token_stack).node
         return self.parse_expression_(primary, 0)
 
     def parse_expression_(self, lhs, min_precedence):
@@ -99,7 +99,10 @@ class BinaryOpExpression(ParserBase):
         return lhs
 
     def next_is_binary(self):
-        next_token = self.token_stack.peek()
+        try:
+            next_token = self.token_stack.peek()
+        except IndexError:
+            return False
         return next_token.value in BinaryOpExpression._op_precedence
 
     def precedence_(self, token = None):
@@ -141,4 +144,4 @@ class PrimaryExpression(ParserBase):
 
         raise ParseError('Unexpected token: {0}'.format(self.token_stack.peek().type), self.token_stack.peek())
 
-Expression = PrimaryExpression
+Expression = BinaryOpExpression

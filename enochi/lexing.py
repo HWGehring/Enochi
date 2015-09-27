@@ -72,4 +72,11 @@ def lex_raw(text):
         yield token
         start = token.slice.stop
 
-lex = lex_raw
+
+def lex_skip_whitespace(text):
+    for token in lex_raw(text):
+        if token.type is TokenType.whitespace:
+            continue
+        yield token
+
+lex = lex_skip_whitespace

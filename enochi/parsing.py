@@ -36,6 +36,9 @@ class TokenStack:
         return rv
 
     def push_cursor(self):
+        self._cursor_stack.append(self._cursor)
+
+    def pop_cursor(self):
         self._cursor = self._cursor_stack.pop()
 
 
@@ -71,4 +74,39 @@ class UnaryOpExpression(ParserBase):
         rhs_node = Expression(self.token_stack).node
         return astnodes.UnaryOpExpression(op_token.value, rhs_node)
 
-Expression = IntegerLiteralExpression
+
+class BracketedExpression(ParserBase):
+
+    def parse(self):
+        self.pop_expecting(TokenType.left_paren)
+        expr_node = Expression(self.token_stack).node
+        self.pop_expecting(TokenType.right_paren)
+        return expr_node
+
+
+class PrimaryExpression(ParserBase):
+
+    def try_to_parse(self, parser):
+        try:
+            self.token_stack.push_cursor()
+            return parser(self.token_stack).node, True
+        except ParseError:
+            self.token_stack.pop_cursor()
+            return None, False
+
+    def parse(self):
+        rv, ok = self.try_to_parse(IntegerLiteralExpression)
+        if ok:
+            return rv
+
+        rv, ok = self.try_to_parse(UnaryOpExpression)
+        if ok:
+            return rv
+
+        rv, ok = self.try_to_parse(BracketedExpression)
+        if ok:
+            return rv
+
+        raise ParseError('Unexpected token: {0}'.format(self.token_stack.peek().type), self.token_stack.peek())
+
+Expression = PrimaryExpression

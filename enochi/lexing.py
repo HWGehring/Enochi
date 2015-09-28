@@ -20,7 +20,6 @@ class TokenType:
         TokenDef('asterisk', '*', None),
         TokenDef('slash', '/', None),
 
-        TokenDef('cock', '8==D', None),
         TokenDef('left_paren', '(', None),
         TokenDef('right_paren', ')', None),
 

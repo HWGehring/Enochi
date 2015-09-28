@@ -43,8 +43,9 @@ class Lexer:
         token = None
         token_text = None
 
-        for type_ in TokenType.token_defs():
-            name, pattern, value_filter = type_
+        for token_def in TokenType.token_defs():
+            name, pattern, value_filter = token_def
+
             if pattern is None:
                 continue
             elif isinstance(pattern, str):
@@ -63,7 +64,7 @@ class Lexer:
             token_text = match_value
             if value_filter is not None:
                 match_value = value_filter(match_value)
-            token = Token(type_, match_value, slice(string_index, string_index + len(token_text)))
+            token = Token(token_def, match_value, slice(string_index, string_index + len(token_text)))
 
         return token
 

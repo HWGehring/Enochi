@@ -15,28 +15,6 @@ class ParseError(Exception):
         return '{0}-{1}: {2}'.format(self.tokens[0].slice.start, self.tokens[-1].slice.stop-1, self.message)
 
 
-class TokenStack:
-
-    def __init__(self, tokens):
-        self._tokens = list(tokens)
-        self._cursor = 0
-        self._cursor_stack = []
-
-    def peek(self):
-        return self._tokens[self._cursor]
-
-    def pop(self):
-        rv = self.peek()
-        self._cursor += 1
-        return rv
-
-    def push_cursor(self):
-        self._cursor_stack.append(self._cursor)
-
-    def pop_cursor(self):
-        self._cursor = self._cursor_stack.pop()
-
-
 class ParserBase:
 
     def __init__(self, token_stack):
@@ -100,7 +78,7 @@ class BinaryOpExpression(ParserBase):
             return False
         return next_token.value in BinaryOpExpression._op_precedence
 
-    def precedence_(self, token = None):
+    def precedence_(self, token=None):
         token = token or self.token_stack.peek()
         return BinaryOpExpression._op_precedence[token.value]
 

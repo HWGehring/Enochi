@@ -30,3 +30,25 @@ class TokenType:
             if prop.startswith('__') or prop == 'token_defs':
                 continue
             yield getattr(TokenType, prop)
+
+
+class TokenStack:
+
+    def __init__(self, tokens):
+        self._tokens = list(tokens)
+        self._cursor = 0
+        self._cursor_stack = []
+
+    def peek(self):
+        return self._tokens[self._cursor]
+
+    def pop(self):
+        rv = self.peek()
+        self._cursor += 1
+        return rv
+
+    def push_cursor(self):
+        self._cursor_stack.append(self._cursor)
+
+    def pop_cursor(self):
+        self._cursor = self._cursor_stack.pop()

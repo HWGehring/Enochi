@@ -1,4 +1,4 @@
-from enochi.lexing import TokenType
+from enochi.lexer import TokenType
 from enochi import astnodes
 
 

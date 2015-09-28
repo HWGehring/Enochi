@@ -1,5 +1,5 @@
 import unittest
-from enochi.lexing import TokenType, Token, lex
+from enochi.lexer import TokenType, Token, lex
 
 
 class LexingText(unittest.TestCase):

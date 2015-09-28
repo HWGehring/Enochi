@@ -14,68 +14,62 @@ class TokenDef(namedtuple('TokenDef', ['name', 'pattern', 'value_filter'])):
 
 class TokenType:
 
-    defs = [
-        TokenDef('plus', '+', None),
-        TokenDef('minus', '-', None),
-        TokenDef('asterisk', '*', None),
-        TokenDef('slash', '/', None),
+    plus = TokenDef('plus', '+', None)
+    minus = TokenDef('minus', '-', None)
+    asterisk = TokenDef('asterisk', '*', None)
+    slash = TokenDef('slash', '/', None)
 
-        TokenDef('left_paren', '(', None),
-        TokenDef('right_paren', ')', None),
+    left_paren = TokenDef('left_paren', '(', None)
+    right_paren = TokenDef('right_paren', ')', None)
 
-        TokenDef('integer', re.compile('[0-9]+'), int),
-        TokenDef('whitespace', re.compile('[ \t]+'), None),
-    ]
+    integer = TokenDef('integer', re.compile('[0-9]+'), int)
+    whitespace = TokenDef('whitespace', re.compile('[ \t]+'), None)
 
-for def_ in TokenType.defs:
-    setattr(TokenType, def_.name, def_)
-
-
-def first_token(text, start=0):
-    match_text = text[start:]
-    token = None
-    token_text = None
-
-    for type_ in TokenType.defs:
-        name, pattern, value_filter = type_
-        if pattern is None:
-            continue
-        elif isinstance(pattern, str):
-            if not match_text.startswith(pattern):
+    @classmethod
+    def token_defs(cls):
+        for prop in dir(TokenType):
+            if prop.startswith('__') or prop == 'token_defs':
                 continue
-            match_value = pattern
-        else:
-            match = pattern.match(match_text)
-            if not match:
+            yield getattr(TokenType, prop)
+
+
+class Lexer:
+
+    def __init__(self, source_code):
+        self.source_code = source_code
+
+    def next_token(self, string_index):
+        match_text = self.source_code[string_index:]
+        token = None
+        token_text = None
+
+        for type_ in TokenType.token_defs():
+            name, pattern, value_filter = type_
+            if pattern is None:
                 continue
-            match_value = match.group(0)
+            elif isinstance(pattern, str):
+                if not match_text.startswith(pattern):
+                    continue
+                match_value = pattern
+            else:
+                match = pattern.match(match_text)
+                if not match:
+                    continue
+                match_value = match.group(0)
 
-        if token_text is not None and len(token_text) >= len(match_value):
-            continue
+            if token_text is not None and len(token_text) >= len(match_value):
+                continue
 
-        token_text = match_value
-        if value_filter is not None:
-            match_value = value_filter(match_value)
-        token = Token(type_, match_value, slice(start, start + len(token_text)))
+            token_text = match_value
+            if value_filter is not None:
+                match_value = value_filter(match_value)
+            token = Token(type_, match_value, slice(string_index, string_index + len(token_text)))
 
-    return token
+        return token
 
-
-def lex_raw(text):
-    start = 0
-    while True:
-        if start >= len(text):
-            break
-
-        token = first_token(text, start)
-        yield token
-        start = token.slice.stop
-
-
-def lex_skip_whitespace(text):
-    for token in lex_raw(text):
-        if token.type is TokenType.whitespace:
-            continue
-        yield token
-
-lex = lex_skip_whitespace
+    def all_tokens(self):
+        string_index = 0
+        while string_index < len(self.source_code):
+            token = self.next_token(string_index)
+            yield token
+            string_index = token.slice.stop

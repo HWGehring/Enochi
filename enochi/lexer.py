@@ -1,4 +1,4 @@
-from token_type import Token, TokenType
+from token_type import Token, TokenType, TokenStack
 
 __author__ = 'hwgehring'
 
@@ -44,3 +44,6 @@ class Lexer:
             token = self.next_token(string_index)
             yield token
             string_index = token.slice.stop
+
+    def token_stack(self):
+        return TokenStack(list(self.all_tokens()))

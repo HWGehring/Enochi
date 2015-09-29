@@ -1,4 +1,4 @@
-from token import Token, TokenType
+from token_type import Token, TokenType
 
 __author__ = 'hwgehring'
 
